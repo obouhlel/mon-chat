@@ -1,0 +1,23 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "latest",
+    "@nuxt/eslint": "1.4.1",
+    "@nuxt/fonts": "0.11.4",
+    "@nuxt/icon": "1.14.0",
+    "@nuxt/image": "1.10.0",
+    "@nuxt/ui": "^2.21.1",
+    "eslint": "^9.0.0",
+    "nuxt": "^3.16.0",
+    "vue": "latest"
+  }
+}
