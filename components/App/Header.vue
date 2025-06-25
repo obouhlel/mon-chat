@@ -14,7 +14,7 @@ onMounted(() => {
 </script>
 <template>
   <header class="w-full h-12 px-2 py-3 mb-2 bg-emerald-200 dark:bg-emerald-800 flex justify-between">
-    <h1 class="text-xl font-bold">Mon chat</h1>
+    <NuxtLink to="/" class="text-xl font-bold">Mon chat</NuxtLink>
     <div class="space-x-1 mt-[-3px]">
       <button v-for="mode in modes" :key="mode.value" class="cursor-pointer text-2xl font-bold transition-colors"
         :class="mounted && colorMode.preference === mode.value ? 'text-emerald-700 dark:text-emerald-500' : 'text-black dark:text-white'"
