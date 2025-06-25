@@ -4,6 +4,10 @@ import { useSupabaseClient } from '#imports';
 import type { Database } from '~/types/supabase.type';
 import type { AuthError } from '@supabase/supabase-js';
 
+definePageMeta({
+  middleware: ['auth'],
+})
+
 const supabase = useSupabaseClient<Database>();
 
 const schema = z.object({

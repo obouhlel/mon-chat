@@ -16,6 +16,7 @@ async function logout() {
       <p>C'est une application de messagerie</p>
       <div class="flex gap-3">
         <UButton label="Se deconnecter" @click="logout" />
+        <UButton label="Messagerie" to="/messagerie" />
       </div>
     </div>
     <div v-else class="flex flex-col items-center justify-center gap-5">
