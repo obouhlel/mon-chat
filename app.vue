@@ -5,5 +5,6 @@ import { NuxtLayout, NuxtPage } from '#components';
 <template>
   <NuxtLayout>
     <NuxtPage />
+    <UNotifications />
   </NuxtLayout>
 </template>
