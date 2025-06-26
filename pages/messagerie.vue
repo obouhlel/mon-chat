@@ -4,7 +4,7 @@ definePageMeta({
 })
 
 const search = ref<string>('');
-const mock_messages: {user: string, last_message: string, status: string}[] = []
+const mock_messages: {user: string, last_message: string, status: string}[] = [];
 const filteredMessages = computed(() => {
   if (search.value === "") {
     return mock_messages;
@@ -18,7 +18,7 @@ const filteredMessages = computed(() => {
 const message = ref<string>('');
 
 const modal = ref<boolean>(false);
-const users: string[] = []
+const users: string[] = [];
 const user = computed<string>(() => {
   if (users.length === 0) {
     return "";
