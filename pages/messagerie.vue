@@ -5,6 +5,7 @@ definePageMeta({
   middleware: ["guest"]
 })
 
+// Liste de conversations
 const search = ref<string>('');
 const mock_messages: {user: string, last_message: string, status: string}[] = [];
 const filteredMessages = computed(() => {
@@ -16,9 +17,11 @@ const filteredMessages = computed(() => {
   );
 });
 
+// Conversation
 // const messages = ref<string[]>([]);
 const message = ref<string>('');
 
+// Création de conversation
 const modal = ref<boolean>(false);
 const usersRawData: User[] = await $fetch('/api/users');
 const users: string[] = usersRawData.map((user) => user.display_name);
@@ -35,7 +38,19 @@ const userOptions = computed<{label: string, value: string}[]>(() => {
   return users.map(u => ({ label: u, value: u }));
 });
 const newMessage = ref<string>('');
-
+async function createConversation() {
+  try {
+    await $fetch('/api/conversations', {
+      method: 'POST',
+      body: {
+        userId: usersRawData.find(u => u.display_name === user.value)!.id,
+        message: newMessage.value,
+      }
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
 </script>
 
 <template>
@@ -115,6 +130,7 @@ const newMessage = ref<string>('');
             label="Send"
             class="w-full justify-center"
             :disabled="newMessage === ''"
+            @click="createConversation"
           />
         </div>
       </UCard>
