@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { User } from '~/types/users.type';
+import type { User } from '~/types/user.type';
 
 definePageMeta({
   middleware: ["guest"]

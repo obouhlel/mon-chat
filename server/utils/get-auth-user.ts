@@ -1,6 +1,6 @@
 import { serverSupabaseUser } from '#supabase/server';
 import type { H3Event, EventHandlerRequest } from 'h3';
-import type { User } from '~/types/users.type';
+import type { User } from '~/types/user.type';
 
 export default async function getAuthUser(event: H3Event<EventHandlerRequest>): Promise<User> {
   try {
