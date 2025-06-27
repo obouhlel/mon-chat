@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { User } from '~/types/users.type';
+
 definePageMeta({
   middleware: ["guest"]
 })
@@ -18,7 +20,8 @@ const filteredMessages = computed(() => {
 const message = ref<string>('');
 
 const modal = ref<boolean>(false);
-const users: string[] = [];
+const usersRawData: User[] = await $fetch('/api/users');
+const users: string[] = usersRawData.map((user) => user.display_name);
 const user = computed<string>(() => {
   if (users.length === 0) {
     return "";
