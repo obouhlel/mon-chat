@@ -5,7 +5,7 @@ import type { Database } from "~/types/supabase.type";
 const messagesSchema = z.object({
   conversationId: z.string(),
   senderId: z.string(),
-  message: z.string().min(1, "Le message ne peut pas être vide").max(1000, "Le message est trop long"),
+  message: z.string().min(1, "Le message ne peut pas être vide"),
 })
 
 export default defineEventHandler(async (event) => {
