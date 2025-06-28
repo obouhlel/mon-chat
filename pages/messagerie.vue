@@ -26,6 +26,7 @@ const filtredConversation = computed<ConversationShort[]>(() => {
 const select = ref<string | null>(null);
 const messages = ref<MessageList[]>([]);
 const message = ref<string>('');
+const messagesContainer = ref<HTMLElement | null>(null);
 
 // Creation d'une nouvelle conversation
 const modal = ref<boolean>(false);
@@ -86,6 +87,9 @@ async function selectConversation(conversationId: string) {
       // date: new Date(message.create_at),
     }));
     select.value = data.conversation.id;
+    nextTick(() => {
+      scrollToBottom();
+    });
   } catch (error) {
     console.error(error);
   }
@@ -105,10 +109,26 @@ async function createNewMessage() {
     });
     await getConversations();
     await selectConversation(conversationId);
+    nextTick(() => {
+      scrollToBottom();
+    });
   } catch (error) {
     console.error(error);
   } finally {
     message.value = '';
+  }
+}
+
+function scrollToBottom() {
+  if (messagesContainer.value) {
+    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+  }
+}
+
+async function handleKeyPress(event: KeyboardEvent) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    await createNewMessage();
   }
 }
 
@@ -149,19 +169,33 @@ onBeforeMount(async () => {
     </div>
 
     <!-- Conversation -->
-    <div class="w-full h-full border border-emerald-800 dark:border-emerald-200 rounded col-span-4 flex flex-col justify-end">
-      <div v-if="select" class="w-full h-full px-3 py-4 flex flex-col gap-5 items-start justify-start">
-        <div v-for="message of messages" class="w-full flex items-start justify-start gap-3">
-          <h1>{{ message.user.display_name }} :</h1>
-          <p>{{ message.content }}</p>
-          <!-- <span>{{ message.date }}</span> -->
+    <div class="w-full h-[calc(100vh-56px-32px)] flex flex-col border border-emerald-800 dark:border-emerald-200 rounded col-span-4">
+      <div
+        v-if="select"
+        ref="messagesContainer"
+        class="w-full flex-1 px-3 py-4 flex flex-col gap-5 items-start justify-start overflow-y-auto"
+      >
+        <div
+          v-for="message of messages"
+          :key="message.user.id"
+          class="w-full flex"
+          :class="message.user.id === authUser?.id ? 'justify-end' : 'justify-start'"
+        >
+          <div
+            class="w-[50%] flex items-start justify-start gap-1 border-2 border-emerald-800 dark:border-emerald-200 p-2 rounded"
+            :class="message.user.id === authUser?.id ? 'bg-emerald-100 dark:bg-emerald-900' : 'bg-emerald-200 dark:bg-emerald-800'"
+          >
+            <h1 class="font-bold">{{ message.user.display_name }}:</h1>
+            <p>{{ message.content }}</p>
+            <!-- <span>{{ message.date }}</span> -->
+          </div>
         </div>
       </div>
-      <div v-else class="w-full h-full flex items-center justify-center">
+      <div v-else class="w-full flex-1 flex items-center justify-center">
         <h1 class="font-bold text-xl">Pas de discussion selectionnée</h1>
       </div>
-      <div class="w-full flex px-2 py-4 space-x-2">
-        <UInput v-model="message" class="w-full" placeholder="Message..." :disabled="!select" />
+      <div class="w-full flex px-2 py-4 space-x-2 border-t border-emerald-800 dark:border-emerald-200">
+        <UInput v-model="message" class="w-full" placeholder="Message..." :disabled="!select" @keydown="handleKeyPress" />
         <UButton icon="i-heroicons:paper-airplane-solid" label="Send" :disabled="message === '' && !select" @click="createNewMessage" />
       </div>
     </div>
