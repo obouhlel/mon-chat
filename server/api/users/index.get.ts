@@ -1,22 +1,18 @@
 import { serverSupabaseClient } from '#supabase/server';
-import type { User } from '~/types/user.type';
+import type { Database } from '~/types/supabase.type';
 
 export default defineEventHandler(async (event) => {
   try {
-    const supabase = await serverSupabaseClient(event);
+    const supabase = await serverSupabaseClient<Database>(event);
 
-    const { data, error } = await supabase.auth.admin.listUsers();
+    const { data, error } = await supabase.from('user_profiles').select('*');
 
     if (error && !data) {
       throw error;
     }
 
     const user = await getAuthUser(event);
-    const users: User[] = data.users.map((u) => ({
-      id: u.id,
-      email: u.email!,
-      display_name: u.user_metadata.display_name,
-    })).filter((u) => u.id !== user.id);
+    const users = data.filter((u) => u.id !== user.id);
 
     return users;
   } catch (error) {
