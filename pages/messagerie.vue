@@ -1,93 +1,109 @@
 <script setup lang="ts">
+import type { Conversation } from '~/types/conversation.type';
 import type { User } from '~/types/user.type';
 
 definePageMeta({
   middleware: ["guest"]
 })
 
+const toast = useToast();
+
 // Liste de conversations
 const search = ref<string>('');
-const mock_messages: {user: string, last_message: string, status: string}[] = [];
-const filteredMessages = computed(() => {
-  if (search.value === "") {
-    return mock_messages;
+const conversations = ref<Conversation[]>([]);
+const filtredConversation = computed<Conversation[]>(() => {
+  if (search.value === '') {
+    return conversations.value;
   }
-  return mock_messages.filter(item => 
-    item.user.toLowerCase().startsWith(search.value.toLowerCase())
-  );
-});
+  return conversations.value.filter((conversation) => {
+    return conversation.user.display_name.toLowerCase().startsWith(search.value.toLowerCase());
+  });
+})
 
 // Conversation
-// const messages = ref<string[]>([]);
 const message = ref<string>('');
 
-// Création de conversation
+// Creation d'une nouvelle conversation
 const modal = ref<boolean>(false);
-const usersRawData: User[] = await $fetch('/api/users');
-const users: string[] = usersRawData.map((user) => user.display_name);
-const user = computed<string>(() => {
-  if (users.length === 0) {
-    return "";
-  }
-  return users[0];
-});
-const userOptions = computed<{label: string, value: string}[]>(() => {
-  if (users.length === 0) {
-    return [{ label: "Aucun utilisateur n'est trouvé", value: "", disabled: true }];
-  }
-  return users.map(u => ({ label: u, value: u }));
-});
+const loading = ref<boolean>(false);
 const newMessage = ref<string>('');
+const users = ref<User[]>([]);
+const userId = ref<string | null>(null);
+const user = computed<User | null>(() => users.value.find(u => u.id === userId.value) || null);
+
 async function createConversation() {
+  loading.value = true;
   try {
+    if (!user.value) return;
     await $fetch('/api/conversations', {
       method: 'POST',
       body: {
-        userId: usersRawData.find(u => u.display_name === user.value)!.id,
+        userId: user.value.id,
         message: newMessage.value,
       }
     });
+    await getConversations();
+    toast.add({ title: 'Conversation créée avec succès.', color: 'green' });
   } catch (error) {
     console.log(error);
+  } finally {
+    loading.value = false;
+    modal.value = false;
   }
 }
+
+async function getConversations() {
+  try {
+    const data = await $fetch<{conversations: Conversation[]}>('/api/conversations');
+    conversations.value = data.conversations;
+  } catch (error) {
+    console.error("Erreur fetch conversation : ", error);
+  }
+}
+
+async function fetchUsers() {
+  try {
+    const data = await $fetch<User[]>('/api/users');
+    users.value = data;
+    if (data.length > 0 && !userId.value) {
+      userId.value = data[0].id;
+    }
+  } catch (error) {
+    console.error("Erreur fetch utilisateurs :", error);
+  }
+}
+
+onBeforeMount(async () => {
+  await getConversations();
+  await fetchUsers();
+})
 </script>
 
 <template>
   <div class="w-full min-h-[calc(100vh-56px-32px)] grid grid-cols-5 gap-0 px-3">
-
+    
     <!-- List de conversation -->
     <div class="w-full h-[calc(100vh-56px-32px)]">
       <div class="w-full h-auto pr-3 mb-3 flex items-start justify-start">
-        <UInput v-model="search" icon="i-heroicons-magnifying-glass-20-solid" placeholder="Recherche..." class="w-full" :disabled="filteredMessages.length === 0" />
+        <UInput v-model="search" icon="i-heroicons-magnifying-glass-20-solid" placeholder="Recherche..." class="w-full" />
       </div>
-
+      
       <div class="w-full h-[calc(100vh-56px-32px-44px)] flex flex-col flex-nowrap border border-r-0 border-emerald-800 dark:border-emerald-200 rounded px-2 py-3 space-y-2 overflow-y-auto">
-        <div v-if="filteredMessages.length === 0">
+        <div v-if="conversations.length === 0">
           <div class="w-full h-full flex items-center justify-center">
             <h1 class="font-bold text-xl">Pas de discussion commencée</h1>
           </div>
         </div>
         <div
           v-else
-          v-for="item of filteredMessages"
-          :key="item.user"
+          v-for="conversation of filtredConversation"
+          :key="conversation.user.id"
           class="w-full h-auto border-2 p-2 rounded bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900 hover:dark:bg-emerald-800 cursor-pointer flex justify-between items-center"
         >
           <div>
-            <h1 class="font-bold text-xl">{{ item.user }}</h1>
-            <p class="w-full text-justify line-clamp-1 overflow-hidden">{{ item.last_message }}</p>
+            <h1 class="font-bold text-xl">{{ conversation.user.display_name }} ({{ conversation.user.email }})</h1>
+            <p class="w-full text-justify line-clamp-1 overflow-hidden">{{ conversation.last_message.content }}</p>
           </div>
-          <span
-            class="text-xs font-semibold px-2 py-1 ml-2 rounded"
-            :class="{
-              'bg-blue-200 text-blue-800': item.status === 'Lu',
-              'bg-green-200 text-green-800': item.status === 'Reçu',
-              'bg-yellow-200 text-yellow-800': item.status === 'Envoyé',
-            }"
-          >
-            {{ item.status }}
-          </span>
         </div>
       </div>
     </div>
@@ -119,7 +135,18 @@ async function createConversation() {
         <div class="w-full flex flex-col justify-start items-start space-y-3">
           <div class="w-full flex flex-col space-y-3">
             <h2 class="font-bold text-xl">Utilisateur</h2>
-            <USelect v-model="user" :options="userOptions" class="w-full" />
+            <USelect
+              v-if="users.length > 0"
+              placeholder="Sélectionne un utilisateur"
+              :options="users"
+              option-attribute="display_name"
+              value-attribute="id"
+              class="w-full"
+            />
+            <USelect v-else
+              placeholder="Aucun utilisateur n'est trouvé"
+              class="w-full"
+            />
           </div>
           <div class="w-full flex flex-col space-y-3">
             <h2 class="font-bold text-xl">Message</h2>
@@ -130,6 +157,7 @@ async function createConversation() {
             label="Send"
             class="w-full justify-center"
             :disabled="newMessage === ''"
+            :loading="loading"
             @click="createConversation"
           />
         </div>
