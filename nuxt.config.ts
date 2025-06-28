@@ -10,6 +10,12 @@ export default defineNuxtConfig({
     redirect: false,
   },
 
+  nitro: {
+    externals: {
+      inline: ['isows']
+    }
+  },
+
   css: ['~/assets/css/main.css'],
 
   modules: [
