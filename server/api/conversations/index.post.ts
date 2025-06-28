@@ -3,11 +3,9 @@ import { serverSupabaseClient } from '#supabase/server';
 import { z } from 'zod';
 import type { Database } from "~/types/supabase.type";
 
-
-// TODO: Check if the conversation is already exist
 const conversationSchema = z.object({
   userId: z.string(),
-  message: z.string().min(1, "Le message ne peut pas être vide").max(1000, "Le message est trop long")
+  message: z.string().min(1, "Le message ne peut pas être vide")
 })
 
 export default defineEventHandler(async (event) => {
@@ -18,6 +16,30 @@ export default defineEventHandler(async (event) => {
     const validatedData = conversationSchema.parse(body);
 
     const supabase = await serverSupabaseClient<Database>(event);
+
+    const { data: existingConversation, error: checkError } = await supabase
+      .from('conversations')
+      .select('*')
+      .or(`
+        and(user1_id.eq.${user.id},user2_id.eq.${validatedData.userId}),
+        and(user1_id.eq.${validatedData.userId},user2_id.eq.${user.id})
+      `)
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Failed to check existing conversation',
+        data: checkError
+      });
+    }
+
+    if (existingConversation) {
+      throw createError({
+        statusCode: 409,
+        statusMessage: 'Une conversation existe déjà entre ces utilisateurs'
+      });
+    }
 
     const { data, error } = await supabase.from('conversations').insert({
       user1_id: user.id,
