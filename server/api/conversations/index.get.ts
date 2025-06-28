@@ -27,6 +27,7 @@ export default defineEventHandler(async (event) => {
       const lastMessage = conversation.messages[conversation.messages.length - 1];
 
       return {
+        id: conversation.id,
         user: user,
         last_message: lastMessage || "",
       }
