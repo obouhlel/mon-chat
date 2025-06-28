@@ -8,7 +8,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "start": "bun .output/server/index.mjs"
+    "start": "node .output/server/index.mjs"
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",
@@ -18,8 +18,11 @@
     "@nuxt/image": "1.10.0",
     "@nuxt/ui": "^2.21.1",
     "@nuxtjs/supabase": "1.5.2",
+    "@types/bun": "^1.2.17",
     "eslint": "^9.0.0",
+    "isows": "^1.0.7",
     "nuxt": "^3.16.0",
     "vue": "latest"
-  }
+  },
+  "dependencies": {}
 }
