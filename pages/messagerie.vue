@@ -51,6 +51,7 @@ async function createConversation() {
     toast.add({ title: 'Conversation créée avec succès.', color: 'green' });
   } catch (error) {
     console.log(error);
+    toast.add({ title: 'Erreur lors de la création de la conversation.', color: 'red' });
   } finally {
     loading.value = false;
     modal.value = false;
@@ -63,6 +64,7 @@ async function getConversations() {
     conversations.value = data.conversations;
   } catch (error) {
     console.error("Erreur fetch conversation : ", error);
+    toast.add({ title: 'Erreur lors du chargement des conversations.', color: 'red' });
   }
 }
 
@@ -75,6 +77,7 @@ async function fetchUsers() {
     }
   } catch (error) {
     console.error("Erreur fetch utilisateurs :", error);
+    toast.add({ title: 'Erreur lors du chargement des utilisateurs.', color: 'red' });
   }
 }
 
@@ -92,6 +95,7 @@ async function selectConversation(conversationId: string) {
     });
   } catch (error) {
     console.error(error);
+    toast.add({ title: 'Erreur lors du chargement de la conversation.', color: 'red' });
   }
 }
 
@@ -99,7 +103,7 @@ async function createNewMessage() {
   try {
     const conversationId = select.value;
     if (!conversationId) return;
-    const data = $fetch('/api/messages', {
+    await $fetch('/api/messages', {
       method: 'POST',
       body: {
         conversationId,
@@ -114,6 +118,7 @@ async function createNewMessage() {
     });
   } catch (error) {
     console.error(error);
+    toast.add({ title: 'Erreur lors de l\'envoi du message.', color: 'red' });
   } finally {
     message.value = '';
   }
