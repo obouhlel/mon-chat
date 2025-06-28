@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { Conversation } from '~/types/conversation.type';
+import type { Conversation, ConversationShort } from '~/types/conversation.type';
+import type { MessageList } from '~/types/message.type';
 import type { User } from '~/types/user.type';
 
 definePageMeta({
@@ -7,11 +8,12 @@ definePageMeta({
 })
 
 const toast = useToast();
+const authUser = useSupabaseUser();
 
 // Liste de conversations
 const search = ref<string>('');
-const conversations = ref<Conversation[]>([]);
-const filtredConversation = computed<Conversation[]>(() => {
+const conversations = ref<ConversationShort[]>([]);
+const filtredConversation = computed<ConversationShort[]>(() => {
   if (search.value === '') {
     return conversations.value;
   }
@@ -21,6 +23,8 @@ const filtredConversation = computed<Conversation[]>(() => {
 })
 
 // Conversation
+const select = ref<string | null>(null);
+const messages = ref<MessageList[]>([]);
 const message = ref<string>('');
 
 // Creation d'une nouvelle conversation
@@ -54,7 +58,7 @@ async function createConversation() {
 
 async function getConversations() {
   try {
-    const data = await $fetch<{conversations: Conversation[]}>('/api/conversations');
+    const data = await $fetch<{conversations: ConversationShort[]}>('/api/conversations');
     conversations.value = data.conversations;
   } catch (error) {
     console.error("Erreur fetch conversation : ", error);
@@ -70,6 +74,41 @@ async function fetchUsers() {
     }
   } catch (error) {
     console.error("Erreur fetch utilisateurs :", error);
+  }
+}
+
+async function selectConversation(conversationId: string) {
+  try {
+    const data = await $fetch<{conversation: Conversation}>(`/api/conversations/${conversationId}`);
+    messages.value = data.conversation.messages.map((message) => ({
+      user: message.sender_id === data.conversation.user1.id ? data.conversation.user1 : data.conversation.user2,
+      content: message.content,
+      // date: new Date(message.create_at),
+    }));
+    select.value = data.conversation.id;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function createNewMessage() {
+  try {
+    const conversationId = select.value;
+    if (!conversationId) return;
+    const data = $fetch('/api/messages', {
+      method: 'POST',
+      body: {
+        conversationId,
+        senderId: authUser.value!.id,
+        message: message.value,
+      }
+    });
+    await getConversations();
+    await selectConversation(conversationId);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    message.value = '';
   }
 }
 
@@ -97,8 +136,9 @@ onBeforeMount(async () => {
         <div
           v-else
           v-for="conversation of filtredConversation"
-          :key="conversation.user.id"
+          :key="conversation.id"
           class="w-full h-auto border-2 p-2 rounded bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900 hover:dark:bg-emerald-800 cursor-pointer flex justify-between items-center"
+          @click="selectConversation(conversation.id)"
         >
           <div>
             <h1 class="font-bold text-xl">{{ conversation.user.display_name }} ({{ conversation.user.email }})</h1>
@@ -110,12 +150,19 @@ onBeforeMount(async () => {
 
     <!-- Conversation -->
     <div class="w-full h-full border border-emerald-800 dark:border-emerald-200 rounded col-span-4 flex flex-col justify-end">
-      <div class="w-full h-full flex items-center justify-center">
+      <div v-if="select" class="w-full h-full px-3 py-4 flex flex-col gap-5 items-start justify-start">
+        <div v-for="message of messages" class="w-full flex items-start justify-start gap-3">
+          <h1>{{ message.user.display_name }} :</h1>
+          <p>{{ message.content }}</p>
+          <!-- <span>{{ message.date }}</span> -->
+        </div>
+      </div>
+      <div v-else class="w-full h-full flex items-center justify-center">
         <h1 class="font-bold text-xl">Pas de discussion selectionnée</h1>
       </div>
       <div class="w-full flex px-2 py-4 space-x-2">
-        <UInput v-model="message" class="w-full" placeholder="Message..." :disabled="true" />
-        <UButton icon="i-heroicons:paper-airplane-solid" label="Send" :disabled="message === ''" />
+        <UInput v-model="message" class="w-full" placeholder="Message..." :disabled="!select" />
+        <UButton icon="i-heroicons:paper-airplane-solid" label="Send" :disabled="message === '' && !select" @click="createNewMessage" />
       </div>
     </div>
 
