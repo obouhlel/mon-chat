@@ -34,7 +34,7 @@ const loading = ref<boolean>(false);
 const newMessage = ref<string>('');
 const users = ref<User[]>([]);
 const userId = ref<string | null>(null);
-const user = computed<User | null>(() => users.value.find((u: user) => u.id === userId.value) || null);
+const user = computed<User | null>(() => users.value.find((u: User) => u.id === userId.value) || null);
 
 async function createConversation() {
   loading.value = true;
