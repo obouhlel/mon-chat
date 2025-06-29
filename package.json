@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@supabase/realtime-js": "^2.11.15",
+    "@supabase/supabase-js": "^2.50.2",
     "isows": "^1.0.7"
   }
 }
