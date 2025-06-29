@@ -20,9 +20,10 @@
     "@nuxtjs/supabase": "1.5.2",
     "@types/bun": "^1.2.17",
     "eslint": "^9.0.0",
-    "isows": "^1.0.7",
     "nuxt": "^3.16.0",
     "vue": "latest"
   },
-  "dependencies": {}
+  "dependencies": {
+    "isows": "^1.0.7"
+  }
 }
