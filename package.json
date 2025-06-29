@@ -1,15 +1,5 @@
 {
   "name": "nuxt-app",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "generate": "nuxt generate",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare",
-    "start": "node .output/server/index.mjs"
-  },
   "devDependencies": {
     "@nuxt/devtools": "latest",
     "@nuxt/eslint": "1.4.1",
@@ -23,9 +13,14 @@
     "nuxt": "^3.16.0",
     "vue": "latest"
   },
-  "dependencies": {
-    "@supabase/realtime-js": "^2.11.15",
-    "@supabase/supabase-js": "^2.50.2",
-    "isows": "^1.0.7"
-  }
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "start": "node .output/server/index.mjs"
+  },
+  "type": "module"
 }
