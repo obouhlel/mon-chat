@@ -20,6 +20,12 @@ export default defineNuxtConfig({
   },
 
   nitro: {
+    rollupConfig: {
+      external: [],
+      output: {
+        manualChunks: undefined
+      }
+    },
     externals: {
       inline: ['isows']
     }
