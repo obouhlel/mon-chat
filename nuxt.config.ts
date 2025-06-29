@@ -20,6 +20,7 @@ export default defineNuxtConfig({
   },
 
   nitro: {
+    preset: 'node',
     rollupConfig: {
       external: [],
       output: {
