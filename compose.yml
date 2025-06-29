@@ -1,0 +1,12 @@
+services:
+  app:
+    build: .
+    container_name: mon-chat-app
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    restart: on-failure
