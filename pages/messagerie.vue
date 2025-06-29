@@ -17,7 +17,7 @@ const filtredConversation = computed<ConversationShort[]>(() => {
   if (search.value === '') {
     return conversations.value;
   }
-  return conversations.value.filter((conversation) => {
+  return conversations.value.filter((conversation: ConversationShort) => {
     return conversation.user.display_name.toLowerCase().startsWith(search.value.toLowerCase());
   });
 })
@@ -34,7 +34,7 @@ const loading = ref<boolean>(false);
 const newMessage = ref<string>('');
 const users = ref<User[]>([]);
 const userId = ref<string | null>(null);
-const user = computed<User | null>(() => users.value.find(u => u.id === userId.value) || null);
+const user = computed<User | null>(() => users.value.find((u: user) => u.id === userId.value) || null);
 
 async function createConversation() {
   loading.value = true;
