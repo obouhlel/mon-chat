@@ -19,19 +19,6 @@ export default defineNuxtConfig({
     redirect: false,
   },
 
-  nitro: {
-    preset: 'node',
-    rollupConfig: {
-      external: [],
-      output: {
-        manualChunks: undefined
-      }
-    },
-    externals: {
-      inline: ['isows']
-    }
-  },
-
   css: ['~/assets/css/main.css'],
 
   modules: [
