@@ -1,12 +1,20 @@
 services:
   app:
-    build: .
+    build:
+      context: .
+      secrets:
+        - supabase_url
+        - supabase_key
     container_name: mon-chat-app
     environment:
-      - SUPABASE_URL=${SUPABASE_URL}
-      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-    env_file:
-      - .env
+      - NUXT_PUBLIC_SUPABASE_URL=${NUXT_PUBLIC_SUPABASE_URL}
+      - NUXT_SUPABASE_ANON_KEY=${NUXT_SUPABASE_ANON_KEY}
     ports:
       - "3000:3000"
     restart: on-failure
+
+secrets:
+  supabase_url:
+    environment: NUXT_PUBLIC_SUPABASE_URL
+  supabase_key:
+    environment: NUXT_SUPABASE_ANON_KEY
