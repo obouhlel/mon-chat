@@ -61,12 +61,7 @@ async function createConversation() {
 async function getConversations() {
   try {
     const data = await $fetch<{conversations: ConversationShort[]}>('/api/conversations');
-    conversations.value = data.conversations.map((conversation) => ({
-      id: conversation.id,
-      user: conversation.user,
-      last_message: conversation.last_message,
-      created_at: new Date(conversation.created_at),
-    }));
+    conversations.value = data.conversations;
   } catch (error) {
     console.error("Erreur fetch conversation : ", error);
     toast.add({ title: 'Erreur lors du chargement des conversations.', color: 'red' });
