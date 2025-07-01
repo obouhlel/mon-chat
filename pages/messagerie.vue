@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { title } from 'process';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { Conversation, ConversationShort } from '~/types/conversation.type';
 import type { MessageList } from '~/types/message.type';
+import type { Database } from '~/types/supabase.type';
 import type { User } from '~/types/user.type';
 
 definePageMeta({
@@ -10,6 +11,8 @@ definePageMeta({
 
 const toast = useToast();
 const authUser = useSupabaseUser();
+const supabase = useSupabaseClient<Database>();
+let messagesSubscription: RealtimeChannel | null = null;
 
 // Liste de conversations
 const search = ref<string>('');
@@ -172,10 +175,45 @@ function getDate(date: Date | string): string {
 onMounted(() => {
   checkMobile();
   window.addEventListener('resize', checkMobile);
+
+  messagesSubscription = supabase
+    .channel(`messages-realtime`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages'
+      },
+      async (payload) => {
+        const newMessage = payload.new;
+
+        if (newMessage.conversation_id === select.value) {
+          const sender = users.value.find((u) => u.id === newMessage.sender_id);
+          if (!sender) await fetchUsers();
+
+          const user = users.value.find((u) => u.id === newMessage.sender_id);
+          if (!user) return;
+
+          messages.value.push({
+            user,
+            content: newMessage.content,
+            created_at: new Date(newMessage.created_at),
+          });
+
+          nextTick(() => scrollToBottom());
+        }
+        await getConversations();
+      }
+    )
+    .subscribe();
 });
 
 onUnmounted(() => {
   window.removeEventListener('resize', checkMobile);
+  if (messagesSubscription) {
+    supabase.removeChannel(messagesSubscription);
+  }
 });
 
 onBeforeMount(async () => {
