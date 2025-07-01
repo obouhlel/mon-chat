@@ -61,7 +61,12 @@ async function createConversation() {
 async function getConversations() {
   try {
     const data = await $fetch<{conversations: ConversationShort[]}>('/api/conversations');
-    conversations.value = data.conversations;
+    conversations.value = data.conversations.map((conversation) => ({
+      id: conversation.id,
+      user: conversation.user,
+      last_message: conversation.last_message,
+      created_at: new Date(conversation.created_at),
+    }));
   } catch (error) {
     console.error("Erreur fetch conversation : ", error);
     toast.add({ title: 'Erreur lors du chargement des conversations.', color: 'red' });
@@ -87,7 +92,7 @@ async function selectConversation(conversationId: string) {
     messages.value = data.conversation.messages.map((message) => ({
       user: message.sender_id === data.conversation.user1.id ? data.conversation.user1 : data.conversation.user2,
       content: message.content,
-      // date: new Date(message.create_at),
+      created_at: new Date(message.created_at),
     }));
     select.value = data.conversation.id;
     nextTick(() => {
@@ -153,6 +158,18 @@ function getCurrentConversationName(): string {
   return conversation ? conversation.user.display_name : '';
 }
 
+function getDate(date: Date | string): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
 onMounted(() => {
   checkMobile();
   window.addEventListener('resize', checkMobile);
@@ -199,6 +216,7 @@ onBeforeMount(async () => {
           <div class="min-w-0 flex-1">
             <h1 class="font-bold text-lg lg:text-xl truncate">{{ conversation.user.display_name }} ({{ conversation.user.email }})</h1>
             <p class="w-full text-justify line-clamp-1 overflow-hidden text-sm lg:text-base">{{ conversation.last_message.content }}</p>
+            <p class="w-full text-right text-gray-500 dark:text-gray-400">{{ getDate(conversation.last_message.created_at) }}</p>
           </div>
         </div>
       </div>
@@ -206,7 +224,6 @@ onBeforeMount(async () => {
 
     <!-- Conversation -->
     <div class="w-full h-[calc(100vh-56px-32px)] flex flex-col border border-emerald-800 dark:border-emerald-200 rounded lg:col-span-4" :class="{ 'hidden': !select && isMobile }">
-      <!-- Header mobile avec bouton retour -->
       <div v-if="select" class="w-full p-3 border-b border-emerald-800 dark:border-emerald-200 flex items-center gap-3">
         <UButton
           v-if="isMobile"
@@ -232,8 +249,13 @@ onBeforeMount(async () => {
             class="w-full max-w-[85%] lg:w-[50%] flex items-start justify-start gap-1 border-2 border-emerald-800 dark:border-emerald-200 p-2 rounded"
             :class="message.user.id === authUser?.id ? 'bg-emerald-100 dark:bg-emerald-900' : 'bg-emerald-200 dark:bg-emerald-800'"
           >
-            <h1 class="font-bold text-sm lg:text-base">{{ message.user.display_name }}:</h1>
-            <p class="text-sm lg:text-base break-words">{{ message.content }}</p>
+            <div class="flex flex-col w-full">
+              <div class="flex items-center justify-between">
+              <h1 class="font-bold text-sm lg:text-base">{{ message.user.display_name }}</h1>
+              <span class="text-xs text-gray-500 dark:text-gray-400">{{ message.created_at.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) }}</span>
+              </div>
+              <p class="text-sm lg:text-base break-words">{{ message.content }}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -246,6 +268,7 @@ onBeforeMount(async () => {
       </div>
     </div>
 
+    <!-- Creation d'une nouvelle conversation -->
     <UModal v-model="modal">
       <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
         <template #header>
