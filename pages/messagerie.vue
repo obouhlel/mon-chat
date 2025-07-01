@@ -137,6 +137,31 @@ async function handleKeyPress(event: KeyboardEvent) {
   }
 }
 
+// Responsive
+const isMobile = ref<boolean>(false);
+
+function checkMobile() {
+  isMobile.value = window.innerWidth < 1024;
+}
+
+function backToConversations() {
+  select.value = null;
+}
+
+function getCurrentConversationName(): string {
+  const conversation = conversations.value.find(c => c.id === select.value);
+  return conversation ? conversation.user.display_name : '';
+}
+
+onMounted(() => {
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile);
+});
+
 onBeforeMount(async () => {
   await getConversations();
   await fetchUsers();
@@ -144,15 +169,21 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div class="w-full min-h-[calc(100vh-56px-32px)] grid grid-cols-5 gap-0 px-3">
+  <div class="w-full min-h-[calc(100vh-56px-32px)] grid grid-cols-1 lg:grid-cols-5 gap-0 px-3">
     
     <!-- List de conversation -->
-    <div class="w-full h-[calc(100vh-56px-32px)]">
+    <div class="w-full h-[calc(100vh-56px-32px)]" :class="{ 'hidden': select && isMobile }">
       <div class="w-full h-auto pr-3 mb-3 flex items-start justify-start">
         <UInput v-model="search" icon="i-heroicons-magnifying-glass-20-solid" placeholder="Recherche..." class="w-full" />
       </div>
       
-      <div class="w-full h-[calc(100vh-56px-32px-44px)] flex flex-col flex-nowrap border border-r-0 border-emerald-800 dark:border-emerald-200 rounded px-2 py-3 space-y-2 overflow-y-auto">
+      <div class="w-full h-[calc(100vh-56px-32px-44px)] flex flex-col flex-nowrap border lg:border-r-0 border-emerald-800 dark:border-emerald-200 rounded px-2 py-3 space-y-2 overflow-y-auto">
+        <UButton
+          icon="i-heroicons:plus-20-solid"
+          label="Nouvelle conversation"
+          class="w-full flex items-center justify-center"
+          @click="modal = true"
+        />
         <div v-if="conversations.length === 0">
           <div class="w-full h-full flex items-center justify-center">
             <h1 class="font-bold text-xl">Pas de discussion commencée</h1>
@@ -165,16 +196,26 @@ onBeforeMount(async () => {
           class="w-full h-auto border-2 p-2 rounded bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900 hover:dark:bg-emerald-800 cursor-pointer flex justify-between items-center"
           @click="selectConversation(conversation.id)"
         >
-          <div>
-            <h1 class="font-bold text-xl">{{ conversation.user.display_name }} ({{ conversation.user.email }})</h1>
-            <p class="w-full text-justify line-clamp-1 overflow-hidden">{{ conversation.last_message.content }}</p>
+          <div class="min-w-0 flex-1">
+            <h1 class="font-bold text-lg lg:text-xl truncate">{{ conversation.user.display_name }} ({{ conversation.user.email }})</h1>
+            <p class="w-full text-justify line-clamp-1 overflow-hidden text-sm lg:text-base">{{ conversation.last_message.content }}</p>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Conversation -->
-    <div class="w-full h-[calc(100vh-56px-32px)] flex flex-col border border-emerald-800 dark:border-emerald-200 rounded col-span-4">
+    <div class="w-full h-[calc(100vh-56px-32px)] flex flex-col border border-emerald-800 dark:border-emerald-200 rounded lg:col-span-4" :class="{ 'hidden': !select && isMobile }">
+      <!-- Header mobile avec bouton retour -->
+      <div v-if="select && isMobile" class="w-full p-3 border-b border-emerald-800 dark:border-emerald-200 flex items-center gap-3">
+        <UButton 
+          icon="i-heroicons:arrow-left-20-solid" 
+          variant="ghost" 
+          @click="backToConversations" 
+        />
+        <h2 class="font-bold text-lg truncate">{{ getCurrentConversationName() }}</h2>
+      </div>
+      
       <div
         v-if="select"
         ref="messagesContainer"
@@ -187,12 +228,11 @@ onBeforeMount(async () => {
           :class="message.user.id === authUser?.id ? 'justify-end' : 'justify-start'"
         >
           <div
-            class="w-[50%] flex items-start justify-start gap-1 border-2 border-emerald-800 dark:border-emerald-200 p-2 rounded"
+            class="w-full max-w-[85%] lg:w-[50%] flex items-start justify-start gap-1 border-2 border-emerald-800 dark:border-emerald-200 p-2 rounded"
             :class="message.user.id === authUser?.id ? 'bg-emerald-100 dark:bg-emerald-900' : 'bg-emerald-200 dark:bg-emerald-800'"
           >
-            <h1 class="font-bold">{{ message.user.display_name }}:</h1>
-            <p>{{ message.content }}</p>
-            <!-- <span>{{ message.date }}</span> -->
+            <h1 class="font-bold text-sm lg:text-base">{{ message.user.display_name }}:</h1>
+            <p class="text-sm lg:text-base break-words">{{ message.content }}</p>
           </div>
         </div>
       </div>
@@ -205,24 +245,20 @@ onBeforeMount(async () => {
       </div>
     </div>
 
-    <!-- Creation de nouvelle conversation -->
-    <UButton  icon="i-heroicons:plus-20-solid"
-              class="absolute top-[64px] right-5 size-10 rounded-full flex items-center justify-center"
-              @click="modal = true" />
-
     <UModal v-model="modal">
       <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
         <template #header>
           <div class="w-full">
-            <h1 class="text-center text-xl font-bold">Création d'une nouvelle discussion</h1>
+            <h1 class="text-center text-lg lg:text-xl font-bold">Création d'une nouvelle discussion</h1>
           </div>
         </template>
 
         <div class="w-full flex flex-col justify-start items-start space-y-3">
           <div class="w-full flex flex-col space-y-3">
-            <h2 class="font-bold text-xl">Utilisateur</h2>
+            <h2 class="font-bold text-lg lg:text-xl">Utilisateur</h2>
             <USelect
-              v-if="users.length > 0"
+              v-if="users.length > 0 && userId"
+              v-model="userId"
               placeholder="Sélectionne un utilisateur"
               :options="users"
               option-attribute="display_name"
@@ -235,7 +271,7 @@ onBeforeMount(async () => {
             />
           </div>
           <div class="w-full flex flex-col space-y-3">
-            <h2 class="font-bold text-xl">Message</h2>
+            <h2 class="font-bold text-lg lg:text-xl">Message</h2>
             <UTextarea v-model="newMessage" class="w-full" placeholder="Message..." />
           </div>
           <UButton 
