@@ -20,11 +20,8 @@ export default defineEventHandler(async (event) => {
     const { data: existingConversation, error: checkError } = await supabase
       .from('conversations')
       .select('*')
-      .or(`
-        and(user1_id.eq.${user.id},user2_id.eq.${validatedData.userId}),
-        and(user1_id.eq.${validatedData.userId},user2_id.eq.${user.id})
-      `)
-      .single();
+      .or(`and(user1_id.eq.${user.id},user2_id.eq.${validatedData.userId}),and(user1_id.eq.${validatedData.userId},user2_id.eq.${user.id})`)
+      .maybeSingle();
 
     if (checkError && checkError.code !== 'PGRST116') {
       throw createError({
