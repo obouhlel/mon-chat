@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { title } from 'process';
 import type { Conversation, ConversationShort } from '~/types/conversation.type';
 import type { MessageList } from '~/types/message.type';
 import type { User } from '~/types/user.type';
@@ -49,9 +50,12 @@ async function createConversation() {
     });
     await getConversations();
     toast.add({ title: 'Conversation créée avec succès.', color: 'green' });
-  } catch (error) {
-    console.log(error);
-    toast.add({ title: 'Erreur lors de la création de la conversation.', color: 'red' });
+  } catch (error: any) {
+    if (error?.statusCode === 409) {
+      toast.add({ title: 'Une conversation existe déjà entre ces utilisateurs.', color: 'orange' });
+    } else {
+      toast.add({ title: 'Erreur lors de la création de la conversation.', color: 'red' });
+    }
   } finally {
     loading.value = false;
     modal.value = false;
@@ -63,7 +67,6 @@ async function getConversations() {
     const data = await $fetch<{conversations: ConversationShort[]}>('/api/conversations');
     conversations.value = data.conversations;
   } catch (error) {
-    console.error("Erreur fetch conversation : ", error);
     toast.add({ title: 'Erreur lors du chargement des conversations.', color: 'red' });
   }
 }
@@ -76,7 +79,6 @@ async function fetchUsers() {
       userId.value = data[0].id;
     }
   } catch (error) {
-    console.error("Erreur fetch utilisateurs :", error);
     toast.add({ title: 'Erreur lors du chargement des utilisateurs.', color: 'red' });
   }
 }
@@ -94,7 +96,6 @@ async function selectConversation(conversationId: string) {
       scrollToBottom();
     });
   } catch (error) {
-    console.error(error);
     toast.add({ title: 'Erreur lors du chargement de la conversation.', color: 'red' });
   }
 }
@@ -102,7 +103,11 @@ async function selectConversation(conversationId: string) {
 async function createNewMessage() {
   try {
     const conversationId = select.value;
-    if (!conversationId) return;
+    if (!conversationId || message.value.length === 0) {
+      const errorMessage = message.value.length === 0 ? "Le message est vide" : "Aucune conversation est selectionnée";
+      toast.add({ title: 'Erreur lors de l\'envoi du message.', description: errorMessage, color: 'red' });
+      return;
+    }
     await $fetch('/api/messages', {
       method: 'POST',
       body: {
@@ -117,7 +122,6 @@ async function createNewMessage() {
       scrollToBottom();
     });
   } catch (error) {
-    console.error(error);
     toast.add({ title: 'Erreur lors de l\'envoi du message.', color: 'red' });
   } finally {
     message.value = '';
