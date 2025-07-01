@@ -27,9 +27,8 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    return {
-      messages: data
-    }
+    setResponseStatus(event, 201);
+    return { success: true };
   } catch (error) {
     return error;
   }

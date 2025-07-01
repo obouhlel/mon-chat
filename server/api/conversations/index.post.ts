@@ -63,10 +63,8 @@ export default defineEventHandler(async (event) => {
       }
     });
 
-    return {
-      conversation: data,
-      message: res,
-    }
+    setResponseStatus(event, 201);
+    return { success: true };
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw createError({
