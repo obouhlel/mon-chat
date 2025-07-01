@@ -207,8 +207,9 @@ onBeforeMount(async () => {
     <!-- Conversation -->
     <div class="w-full h-[calc(100vh-56px-32px)] flex flex-col border border-emerald-800 dark:border-emerald-200 rounded lg:col-span-4" :class="{ 'hidden': !select && isMobile }">
       <!-- Header mobile avec bouton retour -->
-      <div v-if="select && isMobile" class="w-full p-3 border-b border-emerald-800 dark:border-emerald-200 flex items-center gap-3">
-        <UButton 
+      <div v-if="select" class="w-full p-3 border-b border-emerald-800 dark:border-emerald-200 flex items-center gap-3">
+        <UButton
+          v-if="isMobile"
           icon="i-heroicons:arrow-left-20-solid" 
           variant="ghost" 
           @click="backToConversations" 
