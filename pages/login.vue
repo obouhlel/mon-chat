@@ -47,7 +47,7 @@ async function onSubmit() {
 </script>
 
 <template>
-  <div class="w-full min-h-[calc(100vh-56px-32px)] flex flex-col gap-5 items-center justify-center">
+  <div class="w-full min-h-[calc(100vh-56px-32px)] px-5 flex flex-col gap-5 items-center justify-center">
     <div class="max-w-md w-full space-y-8">
       <div>
         <h2 class="mt-6 text-center text-3xl font-extrabold">
