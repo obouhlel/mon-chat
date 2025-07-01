@@ -3,7 +3,7 @@ import type { User } from './user.type';
 export interface MessageList {
   user: User,
   content: string,
-  // date: Date,
+  created_at: Date,
 }
 
 export interface Message {
@@ -11,6 +11,6 @@ export interface Message {
   content: string,
   sender_id: string,
   sender?: User,
-  create_at: string,
+  created_at: string,
   converation_id: string,
 }

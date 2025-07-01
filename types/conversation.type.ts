@@ -14,5 +14,5 @@ export interface Conversation {
   user1: User,
   user2: User,
   messages: Message[]
-  create_at: Date,
+  created_at: string,
 }
