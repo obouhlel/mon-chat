@@ -12,5 +12,5 @@ export interface Message {
   sender_id: string,
   sender?: User,
   created_at: string,
-  converation_id: string,
+  conversation_id: string,
 }
