@@ -13,7 +13,7 @@ export function useConversations() {
     }
   }
 
-  async function createConversation(userId: string, message: string) {
+  async function createConversation(userId: string, message: string): Promise<boolean> {
     try {
       await $fetch('/api/conversations', {
         method: 'POST',

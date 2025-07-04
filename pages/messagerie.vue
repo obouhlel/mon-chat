@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { MessageList } from '~/types/message.type';
-
 definePageMeta({
   middleware: ["guest"]
 })
