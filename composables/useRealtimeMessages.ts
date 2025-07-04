@@ -11,7 +11,7 @@ export function useRealtimeMessages() {
   let messagesSubscription: RealtimeChannel | null = null;
 
   function subscribeToMessages(
-    onNewMessage: (messageData: any) => void,
+    onNewMessage: (messageData: Message) => void,
     onConversationsUpdate: () => void
   ) {
     messagesSubscription = supabase
