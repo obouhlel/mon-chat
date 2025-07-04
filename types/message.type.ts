@@ -11,6 +11,6 @@ export interface Message {
   content: string,
   sender_id: string,
   sender?: User,
-  created_at: string,
+  created_at: string | Date,
   conversation_id: string,
 }

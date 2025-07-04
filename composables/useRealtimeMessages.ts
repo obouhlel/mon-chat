@@ -1,6 +1,6 @@
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { Conversation } from '~/types/conversation.type';
-import type { Message } from '~/types/message.type';
+import type { Message, MessageList } from '~/types/message.type';
 import type { User } from '~/types/user.type';
 import type { Database } from '~/types/supabase.type';
 
@@ -11,7 +11,7 @@ export function useRealtimeMessages() {
   let messagesSubscription: RealtimeChannel | null = null;
 
   function subscribeToMessages(
-    onNewMessage: (messageData: Message) => void,
+    onNewMessage: ({ conversationId, messageData }: { conversationId: string, messageData: MessageList }) => void,
     onConversationsUpdate: () => void
   ) {
     messagesSubscription = supabase
