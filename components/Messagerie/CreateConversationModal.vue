@@ -18,10 +18,6 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
-
-const selectedUser = computed<User | null>(() => 
-  props.users.find((u: User) => u.id === props.selectedUserId) || null
-);
 </script>
 
 <template>
